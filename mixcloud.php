@@ -1,46 +1,66 @@
 <?php
-$MIXCLOUD_FIRST_SERVER = 13;
-$MIXCLOUD_LAST_SERVER = 22;
+define("MIXCLOUD_FIRST_SERVER", 13);
+define("MIXCLOUD_LAST_SERVER", 22);
 
-$url = $_REQUEST['url'];
+if (isset($_POST["url"])) {
+	$url = $_POST["url"];
+} else if (isset($_GET["url"])) {
+	$url = $_GET["url"];
+}
 
-if ($url)
-{
-	if (strpos($url, 'http://www.mixcloud.com/') !== 0)
+if (isset($url)) {
+	if(!$url) {
 		exit();
+	}
+	$urlprefix = "http://www.mixcloud.com/";
 
-	$content = file_get_contents($url);
+	$alturls = array(
+		"https://www.mixcloud.com/",
+		"http://www.mixcloud.com/",
+		"https://mixcloud.com/",
+		"http://mixcloud.com/",
+		"https://x.mixcloud.com/",
+		"http://x.mixcloud.com/",
+	);
 
-	if (preg_match('/data-preview-url="([^"]*)"/', $content, $m))
-	{
-		$result = str_replace('previews','cloudcasts/originals',$m[1]);
-		$result = preg_replace('/stream[0-9][0-9]/', 'streamXX', $result);
-
-		if (preg_match('/meta property="og:title" content="([^"]*)" \/>/', $content, $m))
-			$title = $m[1];
-		else
-			$title = substr($result, strrpos($result, '/') + 1);
-
-		for ($i = $MIXCLOUD_FIRST_SERVER; $i <= $MIXCLOUD_LAST_SERVER; $i++)
-		{
-			$testUrl = str_replace('streamXX', "stream$i", $result);
-			$headers = get_headers($testUrl, 1);
-
-			if ($headers[0] == 'HTTP/1.1 200 OK')
-			{
-				$result = $testUrl;
-				echo "<div><a href='$result' download='$title.mp3'>$title</a></div>";
-				return;
-			}
+	foreach($alturls as $alturl) {
+		if (substr($url, 0, strlen($alturl)) === $alturl) {
+			$url = substr($url, strlen($alturl));
+			break;
 		}
 	}
 
-	echo "<div>An error occurred</div>";
-	return;
-}
-?>
+	$url = $urlprefix . $url;
 
-<!DOCTYPE html>
+	$content = file_get_contents($url);
+
+	if (preg_match("/data-preview-url=\"([^\"]*)\"/", $content, $m)) {
+		$result = str_replace("previews", "c/originals", $m[1]);
+		$result = preg_replace("/stream[0-9][0-9]/", "streamXX", $result);
+
+		if (preg_match("/meta property=\"og:title\" content=\"([^\"]*)\" \/>/", $content, $m)) {
+			$title = $m[1];
+		} else {
+			$title = substr($result, strrpos($result, "/") + 1);
+		}
+
+		$return = "No server found for download";
+		for ($i = MIXCLOUD_FIRST_SERVER; $i <= MIXCLOUD_LAST_SERVER; $i++) {
+			$testUrl = str_replace("streamXX", "stream" . $i, $result);
+			$headers = get_headers($testUrl, 1);
+
+			if ($headers[0] === "HTTP/1.1 200 OK") {
+				$return = "<a href=\"" . $testUrl . "\" download=\"" . $title . "\".mp3\">" . $title . "</a>";
+				break;
+			}
+		}
+		echo $return;
+	} else {
+		echo "An error occurred (Is the mixcloud/cloudcast url correct?)";
+	}
+	exit();
+}
+?><!DOCTYPE html>
 <html>
 	<head>
 		<link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
@@ -59,19 +79,19 @@ if ($url)
 	</style>
 
 	<body>
-		<div class='maindiv'>
-			<form id='mainform'>
+		<div class="maindiv">
+			<form id="mainform">
 				<input type="text" name="url" class="input-block-level" placeholder="Enter Mixcloud URL">
 			</form>
-			<div class='info'>
+			<div class="info">
 				Note that this may take up a 30 seconds to process.<br/>
 				You may queue multiple URLs even while another is being processed.
 			</div>
 
-			<div id='results'>
+			<div id="results">
 			</div>
 
-			<div id='loading' style='display: none'>
+			<div id="loading" style="display: none;">
 				<div class="progress progress-striped active">
 				  <div class="bar" style="width: 100%;"></div>
 				</div>
@@ -79,10 +99,10 @@ if ($url)
 		</div>
 
 		<script>
-			$("#mainform").submit(function() {
+			$('#mainform').submit(function() {
 				$('#loading').fadeIn(200);
-				$.post(window.location, $("#mainform").serialize(), function(data) {
-					$('#results').append(data);
+				$.post(window.location, $('#mainform').serialize(), function(data) {
+					$('#results').append('<div>' + data + '</div>');
 					$('#loading').hide();
 				});
 				return false;
