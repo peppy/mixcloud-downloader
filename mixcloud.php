@@ -34,7 +34,9 @@ if (isset($url)) {
 
 	$content = file_get_contents($url);
 
-	if (preg_match("/data-preview-url=\"([^\"]*)\"/", $content, $m)) {
+	if (!preg_match("/m-preview=\"([^\"]*)\"/", $content, $m)) {
+		die("An error occurred (Is the mixcloud/cloudcast url correct?)");
+	} else {
 		$result = str_replace("previews", "c/originals", $m[1]);
 		$result = preg_replace("/stream[0-9][0-9]/", "streamXX", $result);
 
@@ -70,8 +72,6 @@ if (isset($url)) {
 			}
 		}
 		echo $return;
-	} else {
-		echo "An error occurred (Is the mixcloud/cloudcast url correct?)";
 	}
 	exit();
 }
