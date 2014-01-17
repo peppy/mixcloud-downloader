@@ -44,9 +44,24 @@ if (isset($url)) {
 			$title = substr($result, strrpos($result, "/") + 1);
 		}
 
-		$return = "No server found for download";
+		$xreturn = "No server found for download";
+		$return = $xreturn;
 		for ($i = MIXCLOUD_FIRST_SERVER; $i <= MIXCLOUD_LAST_SERVER; $i++) {
 			$testUrl = str_replace("streamXX", "stream" . $i, $result);
+			$headers = get_headers($testUrl, 1);
+
+			if ($headers[0] === "HTTP/1.1 200 OK") {
+				$return = "<a href=\"" . $testUrl . "\" download=\"" . $title . "\".mp3\">" . $title . "</a>";
+				break;
+			}
+		}
+		for ($i = MIXCLOUD_FIRST_SERVER; $i <= MIXCLOUD_LAST_SERVER; $i++) {
+			if ($xreturn !== $return) {
+				break;
+			}
+			$testUrl = str_replace("streamXX", "stream" . $i, $result);
+			$testUrl = str_replace(".mp3", ".m4a", $testUrl);
+			$testUrl = str_replace("originals/", "m4a/64/", $testUrl);
 			$headers = get_headers($testUrl, 1);
 
 			if ($headers[0] === "HTTP/1.1 200 OK") {
