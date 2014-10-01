@@ -67,7 +67,7 @@ if (isset($url)) {
 			$headers = get_headers($testUrl, 1);
 
 			if ($headers[0] === "HTTP/1.1 200 OK") {
-				$return = "<a href=\"" . $testUrl . "\" download=\"" . $title . "\".mp3\">" . $title . "</a>";
+				$return = "<a href=\"" . $testUrl . "\" download=\"" . $title . ".mp3\">" . $title . "</a>";
 				break;
 			}
 		}
