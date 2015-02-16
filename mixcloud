@@ -1,0 +1,96 @@
+#!/usr/bin/php -q
+<?php
+define("MIXCLOUD_FIRST_SERVER", 13);
+define("MIXCLOUD_LAST_SERVER", 22);
+
+if (isset($argv[1])) {
+    $url = $argv[1];
+} else {
+    exit("Missing URL!");
+}
+
+$GLOBALS["filename"] = parseFilename($url);
+
+if (isset($url)) {
+    $urlprefix = "http://www.mixcloud.com/";
+    
+    $alturls = array(
+        "https://www.mixcloud.com/",
+        "http://www.mixcloud.com/",
+        "https://mixcloud.com/",
+        "http://mixcloud.com/",
+        "https://x.mixcloud.com/",
+        "http://x.mixcloud.com/"
+    );
+    
+    foreach ($alturls as $alturl) {
+        if (substr($url, 0, strlen($alturl)) === $alturl) {
+            $url = substr($url, strlen($alturl));
+            break;
+        }
+    }
+    
+    $url = $urlprefix . $url;
+    
+    $content = file_get_contents($url);
+    
+    if (!preg_match("/m-preview=\"([^\"]*)\"/", $content, $m)) {
+        die("An error occurred (Is the mixcloud/cloudcast url correct?)");
+    } else {
+        $result = str_replace("previews", "c/originals", $m[1]);
+        $result = preg_replace("/stream[0-9][0-9]/", "streamXX", $result);
+        
+        if (preg_match("/meta property=\"og:title\" content=\"([^\"]*)\" \/>/", $content, $m)) {
+            $title = $m[1];
+        } else {
+            $title = substr($result, strrpos($result, "/") + 1);
+        }
+        
+        $xreturn = "No server found for download";
+        $return  = $xreturn;
+        for ($i = MIXCLOUD_FIRST_SERVER; $i <= MIXCLOUD_LAST_SERVER; $i++) {
+            $testUrl = str_replace("streamXX", "stream" . $i, $result);
+            $headers = get_headers($testUrl, 1);
+            if ($headers[0] === "HTTP/1.1 200 OK") {
+                download($testUrl);
+                break;
+            }
+        }
+        for ($i = MIXCLOUD_FIRST_SERVER; $i <= MIXCLOUD_LAST_SERVER; $i++) {
+            if ($xreturn !== $return) {
+                break;
+            }
+            $testUrl = str_replace("streamXX", "stream" . $i, $result);
+            $testUrl = str_replace(".mp3", ".m4a", $testUrl);
+            $testUrl = str_replace("originals/", "m4a/64/", $testUrl);
+            $headers = get_headers($testUrl, 1);
+            
+            if ($headers[0] === "HTTP/1.1 200 OK") {
+                download($testUrl);
+                break;
+            }
+        }
+    }
+    exit();
+}
+
+function parseFilename($url) {
+	$urlPieces = explode("/", $url);
+	$filename = array_pop($urlPieces);
+	# Handle "/" at the end of URL
+	if(!$filename) {
+		$filename = array_pop($urlPieces);
+	}
+	return $filename;
+}
+
+function download($url) {
+	$urlPieces = explode("/", $url);
+	$fileExtension = array_pop($urlPieces);
+	$filename = $GLOBALS["filename"];
+	$filename = "$filename.$fileExtension";
+	echo "File name: $filename" . PHP_EOL;
+	echo "Download URL: $url" . PHP_EOL;
+	echo "Downloading, please wait" . PHP_EOL;
+	file_put_contents("$filename.$fileExtension", file_get_contents($url));
+}
