@@ -92,5 +92,5 @@ function download($url) {
 	echo "File name: $filename" . PHP_EOL;
 	echo "Download URL: $url" . PHP_EOL;
 	echo "Downloading, please wait" . PHP_EOL;
-	file_put_contents("$filename.$fileExtension", file_get_contents($url));
+	exec("curl -o $filename.$fileExtension $url");
 }
