@@ -119,7 +119,7 @@ if (isset($url)) {
 				$.post(window.location, $('#mainform').serialize())
 					.done(function(data) {
 						$('#results').append('<div>' + data + '</div>');
-						})
+					})
 					.fail(function() {
 						$('#results').append('<div>Error</div>').addClass('text-error');
 					})
