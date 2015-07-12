@@ -116,10 +116,16 @@ if (isset($url)) {
 		<script>
 			$('#mainform').submit(function() {
 				$('#loading').fadeIn(200);
-				$.post(window.location, $('#mainform').serialize(), function(data) {
-					$('#results').append('<div>' + data + '</div>');
-					$('#loading').hide();
-				});
+				$.post(window.location, $('#mainform').serialize())
+					.done(function(data) {
+						$('#results').append('<div>' + data + '</div>');
+					})
+					.fail(function() {
+						$('#results').append('<div>Error</div>').addClass('text-error');
+					})
+					.always(function() {
+						$('#loading').hide();
+					});
 				return false;
 			});
 		</script>
