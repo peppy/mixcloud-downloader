@@ -2,11 +2,10 @@
 define("MIXCLOUD_FIRST_SERVER", 13);
 define("MIXCLOUD_LAST_SERVER", 22);
 
-if (isset($_POST["url"])) {
-	$url = $_POST["url"];
-} else if (isset($_GET["url"])) {
-	$url = $_GET["url"];
+if(isset($_REQUEST["url"])) {
+	$url = $_REQUEST["url"];	
 }
+
 
 if (isset($url)) {
 	if(!$url) {
