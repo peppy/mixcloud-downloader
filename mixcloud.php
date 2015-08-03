@@ -2,15 +2,37 @@
 define("MIXCLOUD_FIRST_SERVER", 13);
 define("MIXCLOUD_LAST_SERVER", 22);
 
-if(isset($_REQUEST["url"])) {
-	$url = $_REQUEST["url"];	
+$proxySettings = array(
+	"enabled" => true, // set to 'true' for enabling and edit the 'host' and 'port' fields below
+	"host" => "192.168.1.202",
+	"port" => 80,
+	"auth" => true, // set to 'true' for enabling and edit the 'user' and 'password' fields below
+	"user" => "",
+	"password" => ""
+);
+
+if($proxySettings["enabled"]) {
+	stream_context_set_default(
+	 array(
+	  'http' => array(
+	   'proxy' => sprintf("tcp://%s:%d", $proxySettings["host"], $proxySettings["port"]),
+	   'request_fulluri' => true,
+		 'header' => ($proxySettings["auth"] === true ?	"Proxy_Authorization: Basic " . base64_encode(sprintf("%s:%s", $proxySettings["user"], $proxySettings["password"])) : NULL)
+	  )
+	 )
+	);
 }
 
+if(isset($_REQUEST["url"])) {
+	if (filter_var($_REQUEST["url"], FILTER_VALIDATE_URL) === FALSE) {
+    die('Invalid Mixcloud URL!');
+	}
+	else {
+		$url = $_REQUEST["url"];
+	}
+}
 
 if (isset($url)) {
-	if(!$url) {
-		exit();
-	}
 	$urlprefix = "http://www.mixcloud.com/";
 
 	$alturls = array(
@@ -30,7 +52,7 @@ if (isset($url)) {
 	}
 
 	$url = $urlprefix . $url;
-
+	
 	$content = file_get_contents($url);
 
 	if (!preg_match("/m-preview=\"([^\"]*)\"/", $content, $m)) {
