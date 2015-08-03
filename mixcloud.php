@@ -4,9 +4,9 @@ define("MIXCLOUD_LAST_SERVER", 22);
 
 $proxySettings = array(
 	"enabled" => true, // set to 'true' for enabling and edit the 'host' and 'port' fields below
-	"host" => "192.168.1.202",
+	"host" => "127.0.0.1",
 	"port" => 80,
-	"auth" => true, // set to 'true' for enabling and edit the 'user' and 'password' fields below
+	"auth" => false, // set to 'true' for enabling and edit the 'user' and 'password' fields below
 	"user" => "",
 	"password" => ""
 );
