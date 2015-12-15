@@ -38,7 +38,8 @@ if (isset($url)) {
 	} else {
 		$result = str_replace("previews", "c/originals", $m[1]);
 		$result = preg_replace("/stream[0-9][0-9]/", "streamXX", $result);
-
+		$result = preg_replace("/audiocdn[0-9][0-9]/", "streamXX", $result);
+		
 		if (preg_match("/meta property=\"og:title\" content=\"([^\"]*)\" \/>/", $content, $m)) {
 			$title = $m[1];
 		} else {
