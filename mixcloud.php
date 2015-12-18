@@ -49,6 +49,7 @@ if (isset($url)) {
 		$return = $xreturn;
 		for ($i = MIXCLOUD_FIRST_SERVER; $i <= MIXCLOUD_LAST_SERVER; $i++) {
 			$testUrl = str_replace("streamXX", "stream" . $i, $result);
+			$result = preg_replace("/audiocdn[0-9][0-9]/", "streamXX", $result); // new mixcloud preview url format = http://audiocdnXX.mixcloud.com/etc
 			$headers = get_headers($testUrl, 1);
 
 			if ($headers[0] === "HTTP/1.1 200 OK") {
